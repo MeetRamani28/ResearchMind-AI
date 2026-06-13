@@ -1,14 +1,21 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useEffect } from "react";
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
-  const { user, isLoading, isError } = useAuth();
+  const { user, isLoading, isError, socket } = useAuth();
   const location = useLocation();
+
+  useEffect(() => {
+    if (user && socket && socket.connected) {
+      socket.emit("join", user._id);
+    }
+  }, [user, socket]);
 
   if (isLoading) {
     return (
-      <div className="flex h-screen items-center justify-center dark:bg-slate-950">
-        <div className="text-indigo-600 font-bold text-xl">Loading...</div>
+      <div className="flex h-screen items-center justify-center dark:bg-slate-950 text-indigo-600 font-bold">
+        Loading...
       </div>
     );
   }
@@ -23,5 +30,4 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 
   return children;
 };
-
 export default ProtectedRoute;

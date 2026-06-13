@@ -19,9 +19,10 @@ exports.runResearch = async (req, res) => {
     pythonProcess.stdout.on("data", (data) => {
       const output = data.toString();
       dataResult += output;
-
       if (output.includes("[STATUS]")) {
-        io.to(userId).emit("research-status", { message: output.trim() });
+        io.to(userId).emit("research-status", {
+          message: output.split("[STATUS]")[1]?.trim(),
+        });
       }
     });
 
@@ -30,24 +31,25 @@ exports.runResearch = async (req, res) => {
         req.user.dailyPromptCount += 1;
         await req.user.save();
 
-        const result = dataResult.split("[FINAL_RESULT]")[1]?.trim();
-
-        io.to(userId).emit("research-complete", {
-          success: true,
-          data: JSON.parse(result),
-        });
-
-        res.status(200).json({ success: true, data: JSON.parse(result) });
+        const rawResult = dataResult.split("[FINAL_RESULT]")[1]?.trim();
+        try {
+          const parsedResult = JSON.parse(rawResult);
+          io.to(userId).emit("research-complete", {
+            success: true,
+            data: parsedResult,
+          });
+          res.status(200).json({ success: true, data: parsedResult });
+        } catch (e) {
+          res
+            .status(500)
+            .json({ success: false, message: "Invalid JSON format from AI" });
+        }
       } else {
         io.to(userId).emit("research-error", {
           message: "AI pipeline execution failed",
         });
         res.status(500).json({ success: false, message: "AI pipeline failed" });
       }
-    });
-
-    pythonProcess.stderr.on("data", (data) => {
-      console.error(`stderr: ${data}`);
     });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });

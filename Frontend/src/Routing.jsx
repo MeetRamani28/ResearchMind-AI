@@ -6,7 +6,7 @@ import {
   useLocation,
 } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
-import Navbar from "./components/Navbar";
+import Sidebar from "./components/Sidebar";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
@@ -14,19 +14,38 @@ import { useAuth } from "./context/AuthContext";
 
 const PublicRoute = ({ children }) => {
   const { user, isLoading } = useAuth();
-  if (isLoading) return null; 
+
+  if (isLoading) {
+    return (
+      <div className="h-screen flex items-center justify-center dark:bg-slate-950 dark:text-white">
+        Loading...
+      </div>
+    );
+  }
+
   return user ? <Navigate to="/dashboard" replace /> : children;
 };
 
 const Layout = ({ children }) => {
   const location = useLocation();
-  const hideNavbar =
+  const { isLoading } = useAuth();
+
+  const hideSidebar =
     location.pathname === "/login" || location.pathname === "/register";
 
+  // Loading state handling
+  if (isLoading && !hideSidebar) {
+    return (
+      <div className="h-screen flex items-center justify-center dark:bg-slate-950 dark:text-white">
+        Loading interface...
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
-      {!hideNavbar && <Navbar />}
-      <main className="container mx-auto p-6">{children}</main>
+    <div className="flex h-screen bg-white dark:bg-slate-950 transition-colors duration-300">
+      {!hideSidebar && <Sidebar />}
+      <main className="flex-1 overflow-y-auto w-full">{children}</main>
     </div>
   );
 };
@@ -63,7 +82,6 @@ const Routing = () => {
           />
 
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
-
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </Layout>
