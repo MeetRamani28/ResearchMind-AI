@@ -7,9 +7,9 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [socketInstance, setSocketInstance] = useState(null);
-  const socket = useRef(null);
+  const socketRef = useRef(null);
 
-  const { data, isLoading, isError } = useQuery({
+  const { data } = useQuery({
     queryKey: ["me"],
     queryFn: async () => {
       const { data } = await api.get("/auth/me");
@@ -19,9 +19,12 @@ export const AuthProvider = ({ children }) => {
     staleTime: 1000 * 60 * 5,
   });
 
-  const user = data?.user || null;
+  const [user, setUser] = useState(null);
 
-  // Socket Connection Logic
+  useEffect(() => {
+    if (data?.user) setUser(data.user);
+  }, [data]);
+
   useEffect(() => {
     if (user?._id) {
       const newSocket = io(
@@ -33,36 +36,26 @@ export const AuthProvider = ({ children }) => {
       );
 
       newSocket.on("connect", () => {
-        console.log("Socket Connected:", newSocket.id);
         newSocket.emit("join", user._id);
+        console.log("Socket Connected & Room Joined");
       });
 
-      socket.current = newSocket;
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+      socketRef.current = newSocket;
       setSocketInstance(newSocket);
 
       return () => {
-        if (socket.current) {
-          socket.current.disconnect();
-          socket.current = null;
+        if (socketRef.current) {
+          socketRef.current.disconnect();
         }
       };
     }
-  }, [user]);
+  }, [user?._id]);
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isLoading,
-        isError,
-        socket: socketInstance,
-      }}
-    >
+    <AuthContext.Provider value={{ user, setUser, socket: socketInstance }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => useContext(AuthContext);

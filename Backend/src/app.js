@@ -4,6 +4,7 @@ const passport = require("passport");
 const cors = require("cors");
 const userRoutes = require("./routes/user.routes");
 const researchRoutes = require("./routes/research.routes");
+const chatRoutes = require("./routes/chat.routes");
 
 require("./config/passport");
 
@@ -24,6 +25,7 @@ app.use(passport.initialize());
 
 app.use("/api/auth", userRoutes);
 app.use("/api/research", researchRoutes);
+app.use("/api/chat", chatRoutes);
 
 app.get("/", (req, res) => {
   res.send("ResearchMind AI Backend is up and running! ✨");

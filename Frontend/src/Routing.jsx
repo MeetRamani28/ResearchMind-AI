@@ -33,7 +33,6 @@ const Layout = ({ children }) => {
   const hideSidebar =
     location.pathname === "/login" || location.pathname === "/register";
 
-  // Loading state handling
   if (isLoading && !hideSidebar) {
     return (
       <div className="h-screen flex items-center justify-center dark:bg-slate-950 dark:text-white">
@@ -72,8 +71,9 @@ const Routing = () => {
             }
           />
 
+          {/* Chat History સાથે ડેશબોર્ડનો પાથ */}
           <Route
-            path="/dashboard"
+            path="/dashboard/:chatId?"
             element={
               <ProtectedRoute allowedRoles={["USER", "RESEARCHER", "ADMIN"]}>
                 <Dashboard />
