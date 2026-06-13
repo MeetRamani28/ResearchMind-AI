@@ -45,14 +45,21 @@ const userSchema = new mongoose.Schema(
       default: "USER",
     },
 
+    plan: {
+      type: String,
+      enum: ["FREE", "BASIC", "PRO", "ENTERPRISE"],
+      default: "FREE",
+    },
+
+    dailyPromptCount: { type: Number, default: 0 },
+    lastResetDate: { type: Date, default: Date.now },
+
     // Research-specific profile data
     researchProfile: {
       type: researchPreferencesSchema,
       default: () => ({}),
     },
 
-    // Usage tracking for SaaS metrics
-    apiUsageCount: { type: Number, default: 0 },
     isAccountActive: { type: Boolean, default: true },
   },
   {

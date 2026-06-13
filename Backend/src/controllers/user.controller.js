@@ -1,5 +1,6 @@
 const User = require("../models/user.model");
 const generateToken = require("../utils/generateToken");
+const { sendWelcomeEmail } = require("../utils/emailService");
 
 // @desc Register User (Local)
 exports.register = async (req, res) => {
@@ -19,9 +20,14 @@ exports.register = async (req, res) => {
       email,
       password,
       provider: "local",
+      plan: "FREE",
     });
     generateToken(res, user);
 
+    sendWelcomeEmail(email, fullName).catch((err) => {
+      console.error("Welcome email failed to send:", err);
+    });
+    
     res.status(201).json({ success: true, user });
   } catch (err) {
     res.status(400).json({ success: false, message: err.message });
@@ -69,7 +75,12 @@ exports.logout = (req, res) => {
 exports.getProfile = async (req, res) => {
   try {
     // req.user is populated by your protect/auth middleware
-    const user = await User.findById(req.user.id);
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
     res.status(200).json({ success: true, user });
   } catch (err) {
     res.status(500).json({ success: false, message: "Server error" });
