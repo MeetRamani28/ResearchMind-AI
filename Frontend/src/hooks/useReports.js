@@ -10,36 +10,34 @@ export const useReports = () => {
       const res = await api.get("/chat/history");
       return res.data;
     },
-    refetchOnMount: true,
   });
 
-  const createChatMutation = useMutation({
+  const createChat = useMutation({
     mutationFn: () => api.post("/chat/"),
-    onSuccess: () => {
-      queryClient.invalidateQueries(["chats"]);
-    },
+    onSuccess: () => queryClient.invalidateQueries(["chats"]),
   });
 
-  const runResearchMutation = useMutation({
-    mutationFn: ({ topic, chatId }) =>
-      api.post("/research/run", { topic, chatId }),
-    onSuccess: () => {
-      queryClient.invalidateQueries(["chats"]); 
-    },
+  const runResearch = useMutation({
+    mutationFn: (data) => api.post("/research/run", data),
+    onSuccess: () => queryClient.invalidateQueries(["chats"]),
   });
 
-  const deleteChatMutation = useMutation({
-    mutationFn: (chatId) => api.delete(`/chat/${chatId}`),
-    onSuccess: () => {
-      queryClient.invalidateQueries(["chats"]);
-    },
+  const updateChat = useMutation({
+    mutationFn: ({ id, title }) => api.patch(`/chat/${id}`, { title }),
+    onSuccess: () => queryClient.invalidateQueries(["chats"]),
+  });
+
+  const deleteChat = useMutation({
+    mutationFn: (id) => api.delete(`/chat/${id}`),
+    onSuccess: () => queryClient.invalidateQueries(["chats"]),
   });
 
   return {
     chats,
     isHistoryLoading,
-    createChat: createChatMutation,
-    runResearch: runResearchMutation,
-    deleteChat: deleteChatMutation,
+    createChat,
+    runResearch, 
+    updateChat,
+    deleteChat,
   };
 };

@@ -3,167 +3,170 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useReports } from "../hooks/useReports";
 import api from "../api/axios";
-import { motion, AnimatePresence } from "framer-motion";
-import { HiCheckCircle, HiPlus } from "react-icons/hi";
-import { useQueryClient } from "@tanstack/react-query";
+import StepCard from "../components/StepCard";
+import ReportPanel from "../components/ReportPanel";
 
 const Dashboard = () => {
-  const { chatId: urlChatId } = useParams();
-  const queryClient = useQueryClient();
+  const { chatId } = useParams();
   const navigate = useNavigate();
-
   const [topic, setTopic] = useState("");
   const [isSearching, setIsSearching] = useState(false);
-  const [logs, setLogs] = useState([]);
-  const [result, setResult] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [agentSteps, setAgentSteps] = useState({
+    search: "waiting",
+    reader: "waiting",
+    writer: "waiting",
+    critic: "waiting",
+  });
+  const scrollRef = useRef(null);
+  const { socket, user } = useAuth();
+  const { createChat, runResearch } = useReports();
 
-  const logsRef = useRef([]);
-  const { socket } = useAuth();
-  const { createChat } = useReports();
-
-  // 1. URL chatId બદલાય ત્યારે ડેટા લોડ કરો
   useEffect(() => {
-    const loadChat = async () => {
-      setResult(null);
-      setLogs([]);
-      logsRef.current = [];
+    if (chatId) {
+      api.get(`/chat/${chatId}`).then(({ data }) => {
+        setMessages(data.messages || []);
+        setAgentSteps({
+          search: "done",
+          reader: "done",
+          writer: "done",
+          critic: "done",
+        });
+      });
+    } else {
+      setMessages([]);
+      setAgentSteps({
+        search: "waiting",
+        reader: "waiting",
+        writer: "waiting",
+        critic: "waiting",
+      });
+    }
+  }, [chatId]);
 
-      if (urlChatId) {
-        try {
-          const { data } = await api.get(`/chat/history`);
-          const chat = data.find((c) => c._id === urlChatId);
-          if (chat?.messages?.length > 0) {
-            const aiMsgs = chat.messages.filter((m) => m.role === "ai");
-            if (aiMsgs.length > 0) {
-              const lastMsg = aiMsgs[aiMsgs.length - 1];
-              // Safe JSON parsing
-              const content =
-                typeof lastMsg.content === "string"
-                  ? JSON.parse(lastMsg.content)
-                  : lastMsg.content;
-              setResult(content);
-            }
-          }
-        } catch (err) {
-          console.error("Chat load error:", err);
-        }
-      }
-    };
-    loadChat();
-  }, [urlChatId]);
-
-  // 2. Socket Events
   useEffect(() => {
-    if (!socket) return;
+    if (!socket || !user) return;
+    socket.emit("join", user._id);
 
     const handleStatus = (d) => {
-      // અહીં અમે સીધું ફંક્શનલ અપડેટ વાપરીએ છીએ જે લેટેસ્ટ સ્ટેટ આપે
-      setLogs((prev) => [...prev, d.message]);
+      const msg = d.message || "";
+      if (msg.includes("STEP-1"))
+        setAgentSteps((p) => ({ ...p, search: "running" }));
+      if (msg.includes("STEP-2"))
+        setAgentSteps((p) => ({ ...p, search: "done", reader: "running" }));
+      if (msg.includes("STEP-3"))
+        setAgentSteps((p) => ({ ...p, reader: "done", writer: "running" }));
+      if (msg.includes("STEP-4"))
+        setAgentSteps((p) => ({ ...p, writer: "done", critic: "running" }));
+    };
+
+    const handleComplete = (d) => {
+      setMessages((prev) => [
+        ...prev,
+        { role: "ai", content: JSON.stringify(d.data) },
+      ]);
+      setIsSearching(false);
+      setAgentSteps({
+        search: "done",
+        reader: "done",
+        writer: "done",
+        critic: "done",
+      });
     };
 
     socket.on("research-status", handleStatus);
-    socket.on("research-complete", (d) => {
-      setResult(d.data);
-      setIsSearching(false);
-      queryClient.invalidateQueries(["chats"]);
-    });
-    socket.on("research-error", (d) => {
-      setLogs((prev) => [...prev, `❌ ${d.message}`]);
-      setIsSearching(false);
-    });
-
+    socket.on("research-complete", handleComplete);
     return () => {
       socket.off("research-status", handleStatus);
-      socket.off("research-complete");
-      socket.off("research-error");
+      socket.off("research-complete", handleComplete);
     };
-  }, [socket, queryClient]);
+  }, [socket, user]);
 
-  const handleRunResearch = async () => {
-    if (!topic.trim()) return;
+  useEffect(() => {
+    scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
-    let currentId = urlChatId;
-    if (!currentId) {
-      const chat = await createChat.mutateAsync();
-      currentId = chat.data._id;
-      navigate(`/dashboard/${currentId}`);
-    }
-
+  const handleRun = async () => {
+    if (!topic.trim() || isSearching) return;
     setIsSearching(true);
-    logsRef.current = ["🚀 Initializing research pipeline..."];
-    setLogs(logsRef.current);
-    setResult(null);
+    setMessages((prev) => [...prev, { role: "user", content: topic }]);
+    setAgentSteps({
+      search: "running",
+      reader: "waiting",
+      writer: "waiting",
+      critic: "waiting",
+    });
 
-    try {
-      await api.post("/research/run", { topic, chatId: currentId });
-    } catch (err) {
-      setLogs((prev) => [
-        ...prev,
-        "❌ " + (err.response?.data?.message || "Failed"),
-      ]);
-      setIsSearching(false);
+    let targetId = chatId;
+    if (!targetId) {
+      const res = await createChat.mutateAsync();
+      targetId = res.data._id;
+      navigate(`/dashboard/${targetId}`);
     }
+    await runResearch.mutateAsync({ topic, chatId: targetId });
+    setTopic("");
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-4 md:p-8 space-y-8">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold dark:text-white">Research Agent</h2>
-        <button
-          onClick={() => navigate("/dashboard")}
-          className="flex items-center gap-2 bg-slate-800 text-white px-4 py-2 rounded-xl hover:bg-slate-700 transition"
-        >
-          <HiPlus /> New Chat
-        </button>
-      </div>
-
-      <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border dark:border-slate-800 shadow-sm">
-        <div className="flex gap-4">
-          <input
-            value={topic}
-            onChange={(e) => setTopic(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleRunResearch()}
-            className="flex-1 p-4 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white border-transparent outline-none"
-            placeholder="Enter topic..."
-          />
-          <button
-            onClick={handleRunResearch}
-            disabled={isSearching}
-            className="px-8 bg-indigo-600 text-white rounded-xl font-bold"
-          >
-            {isSearching ? "Processing..." : "Analyze"}
-          </button>
-        </div>
-      </div>
-
-      {isSearching && (
-        <div className="bg-slate-950 text-indigo-300 p-6 rounded-3xl font-mono text-sm h-64 overflow-y-auto">
-          {logs.map((log, i) => (
-            <p key={i} className="mb-1 border-l-2 border-indigo-900 pl-2">
-              $ {log}
-            </p>
-          ))}
-        </div>
-      )}
-
-      <AnimatePresence mode="wait">
-        {result && (
-          <motion.div
-            key={urlChatId}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="bg-white dark:bg-slate-900 p-8 rounded-3xl border dark:border-slate-800 shadow-xl"
-          >
-            <h3 className="text-xl font-bold mb-6 dark:text-white">
-              <HiCheckCircle className="text-green-500 inline" /> Research
-              Summary
-            </h3>
-            <div className="whitespace-pre-wrap dark:text-slate-300">
-              {result.report || JSON.stringify(result, null, 2)}
+    <div className="flex h-screen bg-slate-950 text-white">
+      <div className="flex-1 flex flex-col relative">
+        <div className="flex-1 overflow-y-auto p-6 space-y-6 pb-32">
+          {messages.map((m, i) => (
+            <div key={i} className="max-w-4xl mx-auto">
+              {m.role === "user" ? (
+                <div className="bg-slate-800 p-4 rounded-xl mb-4">
+                  {m.content}
+                </div>
+              ) : (
+                <ReportPanel report={JSON.parse(m.content)} />
+              )}
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          ))}
+          {isSearching && (
+            <div className="max-w-4xl mx-auto space-y-2">
+              <StepCard
+                num="01"
+                title="Search Agent"
+                state={agentSteps.search}
+              />
+              <StepCard
+                num="02"
+                title="Reader Agent"
+                state={agentSteps.reader}
+              />
+              <StepCard
+                num="03"
+                title="Writer Chain"
+                state={agentSteps.writer}
+              />
+              <StepCard
+                num="04"
+                title="Critic Chain"
+                state={agentSteps.critic}
+              />
+            </div>
+          )}
+          <div ref={scrollRef} />
+        </div>
+
+        <div className="absolute bottom-0 w-full p-6 bg-slate-950/80 backdrop-blur-sm border-t border-slate-800">
+          <div className="max-w-3xl mx-auto flex gap-2">
+            <input
+              value={topic}
+              onChange={(e) => setTopic(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleRun()}
+              className="flex-1 p-4 bg-slate-900 rounded-2xl outline-none border border-slate-800 focus:border-indigo-500"
+              placeholder="Ask anything..."
+            />
+            <button
+              onClick={handleRun}
+              className="bg-indigo-600 px-6 rounded-2xl font-bold"
+            >
+              Analyze
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

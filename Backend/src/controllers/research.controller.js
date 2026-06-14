@@ -11,63 +11,66 @@ exports.runResearch = async (req, res) => {
     const chat = await Chat.findOne({ _id: chatId, userId: req.user._id });
     if (!chat) return res.status(404).json({ message: "Chat not found" });
 
-    if (chat.promptCount >= 15) {
-      return res
-        .status(429)
-        .json({ success: false, message: "Limit reached (15/15)." });
+    if (chat.title === "New Research Chat") {
+      chat.title = topic.substring(0, 40) + (topic.length > 40 ? "..." : "");
+      await chat.save();
+      io.to(userId).emit("chat-updated", { chatId, title: chat.title });
     }
 
     const pythonScript = path.join(__dirname, "../ai_core/pipeline.py");
-    const pythonProcess = spawn("python", [pythonScript, topic]);
+    const pythonExecutable = path.join(
+      __dirname,
+      "../../.venv/Scripts/python.exe",
+    );
+
+    const pythonProcess = spawn(pythonExecutable, [pythonScript, topic]);
 
     let dataResult = "";
+
     pythonProcess.stdout.on("data", (data) => {
       const output = data.toString();
       dataResult += output;
 
-      // માત્ર [STATUS] વાળા મેસેજ મોકલો
       const lines = output.split("\n");
       lines.forEach((line) => {
         if (line.includes("[STATUS]")) {
-          const msg = line.split("[STATUS]")[1].trim();
-          io.to(userId).emit("research-status", { message: msg });
+          const cleanMsg = line.split("[STATUS]")[1]?.trim();
+          if (cleanMsg)
+            io.to(userId).emit("research-status", { message: cleanMsg });
         }
       });
     });
 
     pythonProcess.on("close", async (code) => {
       if (code === 0) {
-        // [FINAL_RESULT] પછીનો ભાગ પાર્સ કરો
-        const rawResult = dataResult.split("[FINAL_RESULT]")[1]?.trim();
         try {
-          const parsedResult = JSON.parse(rawResult);
+          const parts = dataResult.split("[FINAL_RESULT]");
+          if (parts.length < 2) throw new Error("Result tag not found");
 
-          // જો ટાઈટલ ન હોય, તો ટોપિકને ટાઈટલ તરીકે સેવ કરો
-          if (!chat.title || chat.title === "New Research Chat") {
-            chat.title = topic.substring(0, 30);
-          }
+          const parsedResult = JSON.parse(parts[1].trim());
 
-          chat.promptCount += 1;
           chat.messages.push(
             { role: "user", content: topic },
             { role: "ai", content: JSON.stringify(parsedResult) },
           );
           await chat.save();
 
-          io.to(userId).emit("research-complete", {
-            success: true,
-            data: parsedResult,
-          });
-          // અહીં res.status(200) મોકલવાની જરૂર નથી કારણ કે આપણે socket થી રિઝલ્ટ મોકલીએ છીએ
+          io.to(userId).emit("research-complete", { data: parsedResult });
         } catch (e) {
           io.to(userId).emit("research-error", {
-            message: "Invalid JSON format",
+            message: "Result Parsing Failed",
           });
         }
       } else {
-        io.to(userId).emit("research-error", { message: "AI pipeline failed" });
+        io.to(userId).emit("research-error", { message: "AI Pipeline Failed" });
       }
     });
+
+    pythonProcess.stderr.on("data", (data) => {
+      console.error(`[PYTHON_STDERR]: ${data.toString()}`);
+    });
+
+    res.status(202).json({ success: true, message: "Started" });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }

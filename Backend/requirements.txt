@@ -1,6 +1,8 @@
 langchain
 langchain-mistralai
 langchain-core
+langchain-community
+langchainhub
 tavily-python
 beautifulsoup4
 requests

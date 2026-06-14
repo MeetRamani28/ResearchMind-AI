@@ -18,7 +18,9 @@ const io = new Server(server, {
 
 io.on("connection", (socket) => {
   socket.on("join", (userId) => {
-    if (userId) socket.join(userId);
+    if (userId) {
+      socket.join(userId);
+    }
   });
 });
 

@@ -6,8 +6,8 @@ import { io } from "socket.io-client";
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [socketInstance, setSocketInstance] = useState(null);
-  const socketRef = useRef(null);
+  const [socket, setSocket] = useState(null);
+  const [user, setUser] = useState(null);
 
   const { data } = useQuery({
     queryKey: ["me"],
@@ -19,40 +19,33 @@ export const AuthProvider = ({ children }) => {
     staleTime: 1000 * 60 * 5,
   });
 
-  const [user, setUser] = useState(null);
-
   useEffect(() => {
     if (data?.user) setUser(data.user);
   }, [data]);
 
   useEffect(() => {
-    if (user?._id) {
-      const newSocket = io(
-        import.meta.env.VITE_API_URL || "http://localhost:3000",
-        {
-          transports: ["websocket"],
-          withCredentials: true,
-        },
-      );
+    const socketUrl =
+      import.meta.env.VITE_SOCKET_URL || "http://localhost:3000";
 
-      newSocket.on("connect", () => {
-        newSocket.emit("join", user._id);
-        console.log("Socket Connected & Room Joined");
+    if (user?._id) {
+      const newSocket = io(socketUrl, {
+        transports: ["websocket"],
+        withCredentials: true,
       });
 
-      socketRef.current = newSocket;
-      setSocketInstance(newSocket);
+      newSocket.on("connect", () => {
+        console.log("Socket Connected:", newSocket.id);
+        newSocket.emit("join", user._id);
+      });
 
-      return () => {
-        if (socketRef.current) {
-          socketRef.current.disconnect();
-        }
-      };
+      setSocket(newSocket);
+
+      return () => newSocket.disconnect();
     }
   }, [user?._id]);
 
   return (
-    <AuthContext.Provider value={{ user, setUser, socket: socketInstance }}>
+    <AuthContext.Provider value={{ user, setUser, socket }}>
       {children}
     </AuthContext.Provider>
   );
