@@ -1,27 +1,59 @@
+// eslint-disable-next-line no-unused-vars
 import { createContext, useContext, useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import api from "../api/axios";
 import { io } from "socket.io-client";
+import { useQueryClient } from "@tanstack/react-query";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
   const [user, setUser] = useState(null);
+  const queryClient = useQueryClient();
 
-  const { data } = useQuery({
+  // eslint-disable-next-line no-unused-vars
+  const { data, refetch } = useQuery({
     queryKey: ["me"],
     queryFn: async () => {
-      const { data } = await api.get("/auth/me");
-      return data;
+      try {
+        const { data } = await api.get("/auth/me");
+        return data;
+        // eslint-disable-next-line no-unused-vars
+      } catch (err) {
+        setUser(null);
+        return null;
+      }
     },
+    refetchInterval: 10000,
     retry: false,
-    staleTime: 1000 * 60 * 5,
+    staleTime: 0,
   });
 
   useEffect(() => {
-    if (data?.user) setUser(data.user);
+    if (data?.user) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setUser(data.user);
+    } else {
+      setUser(null);
+    }
   }, [data]);
+
+  const logout = async (navigate) => {
+    try {
+      await api.post("/auth/logout");
+    } catch (err) {
+      console.error("Logout error", err);
+    } finally {
+      queryClient.clear();
+      setUser(null);
+      if (socket) {
+        socket.disconnect();
+        setSocket(null);
+      }
+      navigate("/login");
+    }
+  };
 
   useEffect(() => {
     const socketUrl =
@@ -38,6 +70,7 @@ export const AuthProvider = ({ children }) => {
         newSocket.emit("join", user._id);
       });
 
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSocket(newSocket);
 
       return () => newSocket.disconnect();
@@ -45,10 +78,11 @@ export const AuthProvider = ({ children }) => {
   }, [user?._id]);
 
   return (
-    <AuthContext.Provider value={{ user, setUser, socket }}>
+    <AuthContext.Provider value={{ user, setUser, socket, logout }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => useContext(AuthContext);

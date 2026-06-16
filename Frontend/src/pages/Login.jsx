@@ -10,7 +10,6 @@ const Login = () => {
   const { register, handleSubmit } = useForm();
   const { setUser } = useAuth();
   const navigate = useNavigate();
-
   const onSubmit = async (data) => {
     try {
       const response = await api.post("/auth/login", data);
@@ -23,7 +22,6 @@ const Login = () => {
 
   return (
     <div className="flex min-h-screen bg-white dark:bg-slate-950">
-      {/* Left Form Side */}
       <motion.div
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
@@ -70,13 +68,13 @@ const Login = () => {
 
           <div className="grid grid-cols-2 gap-3">
             <a
-              href={`${import.meta.env.VITE_API_URL}/auth/google`}
+              href={`${import.meta.env.VITE_API_BASE_URL}/auth/google`}
               className="flex items-center justify-center gap-2 p-4 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
             >
               <FaGoogle /> Google
             </a>
             <a
-              href={`${import.meta.env.VITE_API_URL}/auth/github`}
+              href={`${import.meta.env.VITE_API_BASE_URL}/auth/github`}
               className="flex items-center justify-center gap-2 p-4 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
             >
               <FaGithub /> GitHub
@@ -95,7 +93,6 @@ const Login = () => {
         </div>
       </motion.div>
 
-      {/* Right Modern Visual Side */}
       <div className="hidden lg:flex flex-1 relative bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-indigo-900/40 via-slate-950 to-slate-950 items-center justify-center p-12 text-white">
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
 

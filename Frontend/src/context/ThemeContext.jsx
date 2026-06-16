@@ -12,6 +12,7 @@ export const ThemeProvider = ({ children }) => {
 
     const applyTheme = (mode) => {
       root.classList.remove("light", "dark");
+
       if (mode === "system") {
         root.classList.add(mediaQuery.matches ? "dark" : "light");
       } else {
@@ -22,7 +23,13 @@ export const ThemeProvider = ({ children }) => {
     applyTheme(theme);
     localStorage.theme = theme;
 
-    const handler = () => theme === "system" && applyTheme("system");
+    const handler = () => {
+      if (theme === "system") {
+        root.classList.remove("light", "dark");
+        root.classList.add(mediaQuery.matches ? "dark" : "light");
+      }
+    };
+
     mediaQuery.addEventListener("change", handler);
     return () => mediaQuery.removeEventListener("change", handler);
   }, [theme]);
@@ -33,4 +40,5 @@ export const ThemeProvider = ({ children }) => {
     </ThemeContext.Provider>
   );
 };
+
 export const useTheme = () => useContext(ThemeContext);

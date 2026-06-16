@@ -27,7 +27,7 @@ exports.register = async (req, res) => {
     sendWelcomeEmail(email, fullName).catch((err) => {
       console.error("Welcome email failed to send:", err);
     });
-    
+
     res.status(201).json({ success: true, user });
   } catch (err) {
     res.status(400).json({ success: false, message: err.message });
@@ -64,11 +64,12 @@ exports.login = async (req, res) => {
 
 // @desc Logout
 exports.logout = (req, res) => {
-  res.cookie("token", "none", {
-    expires: new Date(Date.now() + 10 * 1000),
+  res.clearCookie("token", {
     httpOnly: true,
+    sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+    secure: process.env.NODE_ENV === "production",
   });
-  res.status(200).json({ success: true, message: "Logged out successfully" });
+  return res.status(200).json({ success: true, message: "Logged out" });
 };
 
 // @desc Get Current User Profile

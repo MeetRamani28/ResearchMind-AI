@@ -22,7 +22,6 @@ const Register = () => {
 
   return (
     <div className="flex min-h-screen bg-white dark:bg-slate-950">
-      {/* Left Form Side */}
       <motion.div
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
@@ -100,7 +99,6 @@ const Register = () => {
         </div>
       </motion.div>
 
-      {/* Right Professional Visual Side */}
       <div className="hidden lg:flex flex-1 relative bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-indigo-900/40 via-slate-950 to-slate-950 items-center justify-center p-12 text-white">
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
 

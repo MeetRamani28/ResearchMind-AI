@@ -13,7 +13,7 @@ const { protect } = require("../middleware/authMiddleware");
 // 1. Local Auth Routes
 router.post("/register", register);
 router.post("/login", login);
-router.get("/logout", logout);
+router.post("/logout", logout);
 router.get("/me", protect, getProfile);
 
 // 2. Google OAuth Routes
