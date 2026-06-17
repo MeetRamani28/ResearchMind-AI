@@ -50,9 +50,25 @@ const Sidebar = ({ onOpenSettings }) => {
       <div
         className={`fixed md:relative z-[95] w-72 h-screen bg-white dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800 flex flex-col p-4 transition-transform duration-300 ${isMobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
       >
-        <h1 className="text-xl font-bold text-slate-900 dark:text-white mb-6 px-2 shrink-0 mt-10 md:mt-0">
-          ResearchMind
-        </h1>
+        <div className="flex items-center gap-3 px-3 mb-8 mt-10 md:mt-2 shrink-0">
+          <div className="relative">
+            <img
+              src="/LOGO.png"
+              alt="ResearchMind Logo"
+              className="w-10 h-10 object-contain drop-shadow-lg"
+            />
+            <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-slate-950"></div>
+          </div>
+
+          <div className="flex flex-col">
+            <h1 className="text-lg font-black text-transparent bg-clip-text bg-linear-to-r from-white to-slate-600 tracking-tight">
+              ResearchMind
+            </h1>
+            <span className="text-[10px] font-medium text-indigo-400 tracking-widest uppercase">
+              AI Assistant
+            </span>
+          </div>
+        </div>
 
         <Link
           to="/dashboard"
