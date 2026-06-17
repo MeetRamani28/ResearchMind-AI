@@ -11,6 +11,8 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import { useAuth } from "./context/AuthContext";
+import SettingsModal from "./components/SettingsModal";
+import { useState } from "react";
 
 const PublicRoute = ({ children }) => {
   const { user, isLoading } = useAuth();
@@ -29,6 +31,7 @@ const PublicRoute = ({ children }) => {
 const Layout = ({ children }) => {
   const location = useLocation();
   const { isLoading } = useAuth();
+  const [showSettings, setShowSettings] = useState(false);
 
   const hideSidebar =
     location.pathname === "/login" || location.pathname === "/register";
@@ -43,8 +46,12 @@ const Layout = ({ children }) => {
 
   return (
     <div className="flex h-screen bg-white dark:bg-slate-950 transition-colors duration-300">
-      {!hideSidebar && <Sidebar />}
+      {!hideSidebar && <Sidebar onOpenSettings={() => setShowSettings(true)} />}
       <main className="flex-1 overflow-y-auto w-full">{children}</main>
+      <SettingsModal
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+      />
     </div>
   );
 };
@@ -71,7 +78,6 @@ const Routing = () => {
             }
           />
 
-          {/* Chat History સાથે ડેશબોર્ડનો પાથ */}
           <Route
             path="/dashboard/:chatId?"
             element={

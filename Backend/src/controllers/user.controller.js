@@ -1,6 +1,8 @@
 const User = require("../models/user.model");
 const generateToken = require("../utils/generateToken");
 const { sendWelcomeEmail } = require("../utils/emailService");
+const cloudinary = require("../config/cloudinary");
+const streamifier = require("streamifier");
 
 // @desc Register User (Local)
 exports.register = async (req, res) => {
@@ -75,7 +77,6 @@ exports.logout = (req, res) => {
 // @desc Get Current User Profile
 exports.getProfile = async (req, res) => {
   try {
-    // req.user is populated by your protect/auth middleware
     const user = await User.findById(req.user._id);
     if (!user) {
       return res
@@ -85,6 +86,58 @@ exports.getProfile = async (req, res) => {
     res.status(200).json({ success: true, user });
   } catch (err) {
     res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+// @desc Update Current User Profile
+exports.updateProfile = async (req, res) => {
+  try {
+    const { fullName, currentPassword, newPassword } = req.body;
+    const user = await User.findById(req.user._id).select("+password");
+
+    if (!user)
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+
+    if (fullName) user.fullName = fullName;
+
+    if (currentPassword && newPassword) {
+      const isMatch = await user.comparePassword(currentPassword);
+      if (!isMatch)
+        return res
+          .status(400)
+          .json({ success: false, message: "Incorrect password" });
+      user.password = newPassword;
+    }
+
+    if (req.file) {
+      try {
+        const result = await new Promise((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            { folder: "avatars" },
+            (error, result) => {
+              if (result) resolve(result);
+              else reject(error);
+            },
+          );
+          streamifier.createReadStream(req.file.buffer).pipe(stream);
+        });
+
+        user.avatar = result.secure_url;
+      } catch (cloudinaryError) {
+        console.error("Cloudinary Upload Error:", cloudinaryError);
+        return res
+          .status(500)
+          .json({ success: false, message: "Image upload failed" });
+      }
+    }
+
+    await user.save();
+    res.status(200).json({ success: true, user });
+  } catch (err) {
+    console.error("Update Error:", err);
+    res.status(500).json({ success: false, message: err.message });
   }
 };
 

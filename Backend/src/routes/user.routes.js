@@ -7,14 +7,22 @@ const {
   logout,
   getProfile,
   oAuthSuccess,
+  updateProfile,
 } = require("../controllers/user.controller");
 const { protect } = require("../middleware/authMiddleware");
+const upload = require("../middleware/upload");
 
 // 1. Local Auth Routes
 router.post("/register", register);
 router.post("/login", login);
 router.post("/logout", logout);
 router.get("/me", protect, getProfile);
+router.patch(
+  "/update-profile",
+  protect,
+  upload.single("avatar"),
+  updateProfile,
+);
 
 // 2. Google OAuth Routes
 router.get(

@@ -36,7 +36,6 @@ const userSchema = new mongoose.Schema(
       default: "local",
     },
     providerId: { type: String, default: null },
-    avatar: { type: String, default: "" },
 
     // ResearchMind Specific Roles
     role: {
@@ -49,6 +48,18 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ["FREE", "BASIC", "PRO", "ENTERPRISE"],
       default: "FREE",
+    },
+
+    subscription: {
+      razorpayCustomerId: { type: String, default: null },
+      razorpaySubscriptionId: { type: String, default: null },
+      planExpiryDate: { type: Date, default: null },
+      status: { type: String, default: "inactive" },
+    },
+
+    avatar: {
+      type: String,
+      default: "https://example.com/default-avatar.png",
     },
 
     dailyPromptCount: { type: Number, default: 0 },

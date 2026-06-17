@@ -2,8 +2,6 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useReports } from "../hooks/useReports";
 import { useAuth } from "../context/AuthContext";
-import SettingsModal from "./SettingsModal";
-import UpgradeModal from "./UpgradeModal";
 import {
   HiDotsVertical,
   HiPlus,
@@ -15,7 +13,7 @@ import {
   HiX,
 } from "react-icons/hi";
 
-const Sidebar = () => {
+const Sidebar = ({ onOpenSettings }) => {
   const { chats, updateChat, deleteChat } = useReports();
   const { user } = useAuth();
   const location = useLocation();
@@ -23,9 +21,6 @@ const Sidebar = () => {
   const [editingId, setEditingId] = useState(null);
   const [editTitle, setEditTitle] = useState("");
   const [menuId, setMenuId] = useState(null);
-  const [showSettings, setShowSettings] = useState(false);
-  const [showUpgrade, setShowUpgrade] = useState(false);
-
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   useEffect(() => {
@@ -58,20 +53,6 @@ const Sidebar = () => {
         <h1 className="text-xl font-bold text-slate-900 dark:text-white mb-6 px-2 shrink-0 mt-10 md:mt-0">
           ResearchMind
         </h1>
-
-        <SettingsModal
-          isOpen={showSettings}
-          onClose={() => setShowSettings(false)}
-          onUpgrade={() => {
-            setShowSettings(false);
-            setShowUpgrade(true);
-          }}
-        />
-
-        <UpgradeModal
-          isOpen={showUpgrade}
-          onClose={() => setShowUpgrade(false)}
-        />
 
         <Link
           to="/dashboard"
@@ -152,21 +133,38 @@ const Sidebar = () => {
           ))}
         </div>
 
-        <div className="mt-auto border-t border-slate-200 dark:border-slate-800 pt-4 space-y-2 shrink-0">
-          <div className="px-2 mb-2">
-            <p className="text-slate-900 dark:text-white text-sm font-bold truncate">
-              {user?.fullname}
-            </p>
-            <p className="text-indigo-600 dark:text-indigo-400 text-xs">
-              Plan: {user?.plan || "FREE"}
-            </p>
+        <div className="mt-auto border-t border-slate-200 dark:border-slate-800 pt-4 shrink-0">
+          <div className="flex items-center justify-between px-2 mb-2">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold text-sm overflow-hidden shrink-0">
+                {user?.avatar &&
+                user.avatar !== "https://example.com/default-avatar.png" ? (
+                  <img
+                    src={user.avatar}
+                    alt="Avatar"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  user?.fullName?.charAt(0).toUpperCase() || "U"
+                )}
+              </div>
+              <div className="flex flex-col">
+                <span className="text-sm font-bold text-slate-900 dark:text-white leading-tight">
+                  {user?.fullName || "User"}
+                </span>
+                <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">
+                  Plan: {user?.plan || "FREE"}
+                </span>
+              </div>
+            </div>
+
+            <button
+              onClick={onOpenSettings}
+              className="text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-white transition-colors"
+            >
+              <HiCog size={22} />
+            </button>
           </div>
-          <button
-            onClick={() => setShowSettings(true)}
-            className="w-full flex items-center gap-3 p-2 text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-900 rounded-lg transition-all"
-          >
-            <HiCog size={20} /> Settings
-          </button>
         </div>
       </div>
     </>
