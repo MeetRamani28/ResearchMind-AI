@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import api from "../api/axios";
 import { io } from "socket.io-client";
 import { useQueryClient } from "@tanstack/react-query";
+import LoadingScreen from "../components/LoadingScreen";
 
 const AuthContext = createContext();
 
@@ -13,7 +14,7 @@ export const AuthProvider = ({ children }) => {
   const queryClient = useQueryClient();
 
   // eslint-disable-next-line no-unused-vars
-  const { data, refetch } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["me"],
     queryFn: async () => {
       try {
@@ -21,7 +22,6 @@ export const AuthProvider = ({ children }) => {
         return data;
         // eslint-disable-next-line no-unused-vars
       } catch (err) {
-        setUser(null);
         return null;
       }
     },
@@ -76,6 +76,10 @@ export const AuthProvider = ({ children }) => {
       return () => newSocket.disconnect();
     }
   }, [user?._id]);
+
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
 
   return (
     <AuthContext.Provider value={{ user, setUser, socket, logout }}>

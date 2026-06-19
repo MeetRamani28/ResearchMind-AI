@@ -6,6 +6,7 @@ import api from "../api/axios";
 import StepCard from "../components/StepCard";
 import ReportPanel from "../components/ReportPanel";
 import { HiLogout } from "react-icons/hi";
+import { IoRocketSharp } from "react-icons/io5";
 
 const Dashboard = () => {
   const { chatId } = useParams();
@@ -122,7 +123,7 @@ const Dashboard = () => {
             {messages.length === 0 && !isSearching ? (
               <div className="flex-1 flex flex-col items-center justify-center text-center space-y-4 opacity-60">
                 <div className="w-16 h-16 bg-indigo-500/10 rounded-2xl flex items-center justify-center">
-                  <span className="text-3xl">🚀</span>
+                  <IoRocketSharp size={30} />
                 </div>
                 <h2 className="text-2xl font-bold">
                   Welcome, {user?.fullName || "User"}!
