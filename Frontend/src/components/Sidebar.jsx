@@ -54,17 +54,16 @@ const Sidebar = ({ onOpenSettings }) => {
           <div className="relative">
             <img
               src="/LOGO.png"
-              alt="ResearchMind Logo"
-              className="w-10 h-10 object-contain drop-shadow-lg"
+              alt="Logo"
+              className="w-10 h-10 object-contain"
             />
             <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-slate-950"></div>
           </div>
-
           <div className="flex flex-col">
-            <h1 className="text-lg font-black text-transparent bg-clip-text bg-linear-to-r from-white to-slate-600 tracking-tight">
+            <h1 className="text-lg font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-600">
               ResearchMind
             </h1>
-            <span className="text-[10px] font-medium text-indigo-400 tracking-widest uppercase">
+            <span className="text-[10px] font-medium text-indigo-400 uppercase tracking-widest">
               AI Assistant
             </span>
           </div>
@@ -105,9 +104,14 @@ const Sidebar = ({ onOpenSettings }) => {
                 <Link
                   to={`/dashboard/${chat._id}`}
                   onClick={() => setIsMobileOpen(false)}
-                  className={`flex-1 flex items-center justify-between p-3 rounded-lg text-sm transition-colors ${location.pathname.includes(chat._id) ? "bg-slate-100 dark:bg-slate-800 text-indigo-600 dark:text-indigo-400" : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900"}`}
+                  className={`flex-1 flex items-center justify-between p-3 rounded-lg text-sm transition-colors min-w-0 ${location.pathname.includes(chat._id) ? "bg-slate-100 dark:bg-slate-800 text-indigo-600 dark:text-indigo-400" : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900"}`}
                 >
-                  <span className="truncate block pr-2">{chat.title}</span>
+                  <span
+                    className="truncate flex-1 min-w-0 mr-2"
+                    title={chat.title}
+                  >
+                    {chat.title}
+                  </span>
                   <button
                     onClick={(e) => {
                       e.preventDefault();
@@ -152,31 +156,21 @@ const Sidebar = ({ onOpenSettings }) => {
         <div className="mt-auto border-t border-slate-200 dark:border-slate-800 pt-4 shrink-0">
           <div className="flex items-center justify-between px-2 mb-2">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold text-sm overflow-hidden shrink-0">
-                {user?.avatar &&
-                user.avatar !== "https://example.com/default-avatar.png" ? (
-                  <img
-                    src={user.avatar}
-                    alt="Avatar"
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  user?.fullName?.charAt(0).toUpperCase() || "U"
-                )}
+              <div className="w-9 h-9 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold text-sm shrink-0">
+                {user?.fullName?.charAt(0).toUpperCase() || "U"}
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-bold text-slate-900 dark:text-white leading-tight">
+                <span className="text-sm font-bold text-slate-900 dark:text-white">
                   {user?.fullName || "User"}
                 </span>
-                <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">
+                <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase">
                   Plan: {user?.plan || "FREE"}
                 </span>
               </div>
             </div>
-
             <button
               onClick={onOpenSettings}
-              className="text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-white transition-colors"
+              className="text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-white"
             >
               <HiCog size={22} />
             </button>

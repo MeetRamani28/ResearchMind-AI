@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useReports } from "../hooks/useReports";
@@ -25,63 +25,105 @@ const Dashboard = () => {
   const { socket, user, logout } = useAuth();
   const { createChat, runResearch } = useReports();
 
-  useEffect(() => {
-    if (chatId) {
-      api.get(`/chat/${chatId}`).then(({ data }) => {
-        setMessages(data.messages || []);
-        setAgentSteps({
-          search: "done",
-          reader: "done",
-          writer: "done",
-          critic: "done",
-        });
-      });
-    } else {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setMessages([]);
-      setAgentSteps({
+  const handleStatus = useCallback((d) => {
+    const msg = d.message || "";
+    setAgentSteps((prev) => {
+      const next = {
         search: "waiting",
         reader: "waiting",
         writer: "waiting",
         critic: "waiting",
-      });
-    }
-  }, [chatId]);
+      };
+      if (msg.includes("STEP-1")) return { ...next, search: "running" };
+      if (msg.includes("STEP-2"))
+        return { ...next, search: "done", reader: "running" };
+      if (msg.includes("STEP-3"))
+        return { ...next, search: "done", reader: "done", writer: "running" };
+      if (msg.includes("STEP-4"))
+        return {
+          ...next,
+          search: "done",
+          reader: "done",
+          writer: "done",
+          critic: "running",
+        };
+      return prev;
+    });
+  }, []);
+
+  const handleComplete = useCallback((d) => {
+    setMessages((prev) => [
+      ...prev,
+      { role: "ai", content: JSON.stringify(d.data) },
+    ]);
+    setIsSearching(false);
+    setAgentSteps({
+      search: "done",
+      reader: "done",
+      writer: "done",
+      critic: "done",
+    });
+  }, []);
 
   useEffect(() => {
     if (!socket || !user) return;
     socket.emit("join", user._id);
-    const handleStatus = (d) => {
-      const msg = d.message || "";
-      if (msg.includes("STEP-1"))
-        setAgentSteps((p) => ({ ...p, search: "running" }));
-      if (msg.includes("STEP-2"))
-        setAgentSteps((p) => ({ ...p, search: "done", reader: "running" }));
-      if (msg.includes("STEP-3"))
-        setAgentSteps((p) => ({ ...p, reader: "done", writer: "running" }));
-      if (msg.includes("STEP-4"))
-        setAgentSteps((p) => ({ ...p, writer: "done", critic: "running" }));
-    };
-    const handleComplete = (d) => {
-      setMessages((prev) => [
-        ...prev,
-        { role: "ai", content: JSON.stringify(d.data) },
-      ]);
-      setIsSearching(false);
-      setAgentSteps({
-        search: "done",
-        reader: "done",
-        writer: "done",
-        critic: "done",
-      });
-    };
+
     socket.on("research-status", handleStatus);
     socket.on("research-complete", handleComplete);
+
     return () => {
       socket.off("research-status", handleStatus);
       socket.off("research-complete", handleComplete);
     };
-  }, [socket, user]);
+  }, [socket, user, handleStatus, handleComplete]);
+
+  useEffect(() => {
+    if (!chatId) {
+      localStorage.removeItem("lastVisitedChat");
+      setMessages([]);
+      setAgentSteps({
+        search: "waiting",
+        reader: "waiting",
+        writer: "waiting", 
+        critic: "waiting",
+      });
+      return;
+    }
+
+    localStorage.setItem("lastVisitedChat", chatId);
+
+    const fetchChat = async () => {
+      try {
+        const { data } = await api.get(`/chat/${chatId}`);
+        setMessages(data.messages || []);
+
+        if (data.messages && data.messages.length > 0) {
+          setAgentSteps({
+            search: "done",
+            reader: "done",
+            writer: "done",
+            critic: "done",
+          });
+        } else {
+          setAgentSteps({
+            search: "waiting",
+            reader: "waiting",
+            writer: "waiting",
+            critic: "waiting",
+          });
+        }
+      } catch (err) {
+        console.error("Chat fetch error:", err);
+        if (err.response?.status === 404) {
+          localStorage.removeItem("lastVisitedChat");
+          navigate("/dashboard");
+        }
+      }
+    };
+
+    fetchChat();
+  }, [chatId, navigate]);
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -97,6 +139,7 @@ const Dashboard = () => {
       writer: "waiting",
       critic: "waiting",
     });
+
     let targetId = chatId;
     if (!targetId) {
       const res = await createChat.mutateAsync();
@@ -108,9 +151,9 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="flex h-screen w-full bg-white dark:bg-slate-950 text-slate-900 dark:text-white transition-colors duration-300">
+    <div className="flex h-screen w-full bg-white dark:bg-slate-950 text-slate-900 dark:text-white transition-colors duration-300 overflow-hidden">
       <div className="flex-1 flex flex-col w-full h-full overflow-hidden">
-        <div className="w-full p-4 flex justify-end items-center bg-transparent">
+        <div className="w-full p-4 flex justify-end items-center bg-transparent shrink-0">
           <button
             onClick={() => logout(navigate)}
             className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-slate-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
@@ -118,7 +161,7 @@ const Dashboard = () => {
             <HiLogout size={16} /> Logout
           </button>
         </div>
-        <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 min-h-0">
+        <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 w-full">
           <div className="max-w-4xl mx-auto w-full h-full flex flex-col">
             {messages.length === 0 && !isSearching ? (
               <div className="flex-1 flex flex-col items-center justify-center text-center space-y-4 opacity-60">
@@ -146,7 +189,6 @@ const Dashboard = () => {
                     )}
                   </div>
                 ))}
-
                 {isSearching && (
                   <div className="space-y-2 mb-6">
                     <StepCard
@@ -176,7 +218,6 @@ const Dashboard = () => {
             )}
           </div>
         </div>
-
         <div className="w-full p-4 md:p-6 bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 shrink-0">
           <div className="max-w-3xl mx-auto flex gap-2">
             <input

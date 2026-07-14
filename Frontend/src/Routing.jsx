@@ -4,6 +4,7 @@ import {
   Route,
   Navigate,
   useLocation,
+  useParams,
 } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Sidebar from "./components/Sidebar";
@@ -30,13 +31,13 @@ const PublicRoute = ({ children }) => {
 
 const Layout = ({ children }) => {
   const location = useLocation();
-  const { isLoading } = useAuth();
+  const { isLoading, user } = useAuth();
   const [showSettings, setShowSettings] = useState(false);
 
   const hideSidebar =
     location.pathname === "/login" || location.pathname === "/register";
 
-  if (isLoading && !hideSidebar) {
+  if (isLoading) {
     return (
       <div className="h-screen flex items-center justify-center dark:bg-slate-950 dark:text-white">
         Loading interface...
@@ -46,7 +47,9 @@ const Layout = ({ children }) => {
 
   return (
     <div className="flex h-screen bg-white dark:bg-slate-950 transition-colors duration-300">
-      {!hideSidebar && <Sidebar onOpenSettings={() => setShowSettings(true)} />}
+      {user && !hideSidebar && (
+        <Sidebar onOpenSettings={() => setShowSettings(true)} />
+      )}
       <main className="flex-1 overflow-y-auto w-full">{children}</main>
       <SettingsModal
         isOpen={showSettings}
@@ -54,6 +57,19 @@ const Layout = ({ children }) => {
       />
     </div>
   );
+};
+
+const DashboardWrapper = () => {
+  const { chatId } = useParams();
+
+  if (!chatId) {
+    const lastChat = localStorage.getItem("lastVisitedChat");
+    if (lastChat) {
+      return <Navigate to={`/dashboard/${lastChat}`} replace />;
+    }
+  }
+
+  return <Dashboard key={window.location.pathname} />;
 };
 
 const Routing = () => {
@@ -82,7 +98,7 @@ const Routing = () => {
             path="/dashboard/:chatId?"
             element={
               <ProtectedRoute allowedRoles={["USER", "RESEARCHER", "ADMIN"]}>
-                <Dashboard />
+                <DashboardWrapper />
               </ProtectedRoute>
             }
           />
