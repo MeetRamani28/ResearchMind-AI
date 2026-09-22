@@ -1,4 +1,16 @@
+# Environment & Secret Keys
 .env
-node_modules
-.venv
-__pycache__
+*.env
+!.env.example
+
+# Virtual Environment
+.venv/
+venv/
+env/
+
+# Python Cache & Databases
+__pycache__/
+*.pyc
+researchmind_dev.db
+*.db
+*.sqlite

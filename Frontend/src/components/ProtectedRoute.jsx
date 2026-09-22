@@ -1,33 +1,19 @@
-import { Navigate, useLocation } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { useEffect } from "react";
+import LoadingScreen from "./LoadingScreen";
 
-const ProtectedRoute = ({ children, allowedRoles }) => {
-  const { user, isLoading, isError, socket } = useAuth();
-  const location = useLocation();
+const ProtectedRoute = ({ children }) => {
+  const { isLoaded, isSignedIn } = useAuth();
 
-  useEffect(() => {
-    if (user && socket && socket.connected) {
-      socket.emit("join", user._id);
-    }
-  }, [user, socket]);
-
-  if (isLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center dark:bg-slate-950 text-indigo-600 font-bold">
-        Loading...
-      </div>
-    );
+  if (!isLoaded) {
+    return <LoadingScreen />;
   }
 
-  if (isError || !user) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
-  }
-
-  if (allowedRoles && !allowedRoles.includes(user.role)) {
-    return <Navigate to="/dashboard" replace />;
+  if (!isSignedIn) {
+    return <Navigate to="/login" replace />;
   }
 
   return children;
 };
+
 export default ProtectedRoute;

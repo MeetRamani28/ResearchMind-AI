@@ -1,9 +1,30 @@
-langchain
-langchain-mistralai
-langchain-core
-langchain-community
-langchainhub
-tavily-python
-beautifulsoup4
-requests
-python-dotenv
+fastapi>=0.110.0
+uvicorn[standard]>=0.28.0
+websockets>=12.0
+pydantic>=2.6.0
+pydantic-settings>=2.2.0
+python-dotenv>=1.0.1
+pyjwt>=2.8.0
+cryptography>=42.0.0
+requests>=2.31.0
+httpx>=0.27.0
+sqlalchemy>=2.0.28
+aiosqlite>=0.20.0
+psycopg2-binary>=2.9.9
+asyncpg>=0.29.0
+
+# LangGraph & AI Dependencies
+langgraph>=0.0.30
+langchain>=0.1.13
+langchain-cohere>=0.1.1
+langchain-core>=0.1.33
+langchain-community>=0.0.29
+tavily-python>=0.3.1
+beautifulsoup4>=4.12.3
+
+# Vector Store (Dev & Prod)
+faiss-cpu>=1.8.0
+pinecone-client>=3.2.0
+
+# Image & Utilities
+python-multipart>=0.0.9

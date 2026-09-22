@@ -1,5 +1,4 @@
 import {
-  BrowserRouter,
   Routes,
   Route,
   Navigate,
@@ -74,7 +73,6 @@ const DashboardWrapper = () => {
 
 const Routing = () => {
   return (
-    <BrowserRouter>
       <Layout>
         <Routes>
           <Route
@@ -107,7 +105,6 @@ const Routing = () => {
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </Layout>
-    </BrowserRouter>
   );
 };
 

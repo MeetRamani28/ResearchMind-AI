@@ -1,0 +1,35 @@
+# Environment Variables
+.env
+*.env
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.venv/
+venv/
+env/
+ENV/
+.pytest_cache/
+*.egg-info/
+
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+researchmind_dev.db
+
+# Node / Frontend
+node_modules/
+dist/
+dist-ssr/
+build/
+*.log
+
+# OS & IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
