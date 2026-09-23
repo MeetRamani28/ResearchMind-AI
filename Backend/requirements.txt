@@ -24,7 +24,8 @@ beautifulsoup4>=4.12.3
 
 # Vector Store (Dev & Prod)
 faiss-cpu>=1.8.0
-pinecone-client>=3.2.0
+pinecone>=7.0.0
+langchain-pinecone>=0.2.0
 
 # Image & Utilities
 python-multipart>=0.0.9

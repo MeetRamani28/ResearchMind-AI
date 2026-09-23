@@ -17,8 +17,8 @@ function CenterWireframeEmblem({ isSearching }) {
       <mesh ref={meshRef}>
         <octahedronGeometry args={[1.3, 0]} />
         <meshStandardMaterial
-          color={isSearching ? "#9DB2BF" : "#526D82"}
-          emissive={isSearching ? "#526D82" : "#374B5B"}
+          color={isSearching ? "#E27870" : "#E85A4F"}
+          emissive={isSearching ? "#E85A4F" : "#B83A31"}
           emissiveIntensity={isSearching ? 1.2 : 0.8}
           roughness={0.2}
           metalness={0.9}
@@ -34,8 +34,8 @@ export default function Agent3DCanvas({ isSearching = false }) {
     <div className="w-full h-48 md:h-56 relative flex flex-col items-center justify-center bg-transparent border-0 shadow-none">
       <Canvas camera={{ position: [0, 0, 3.8], fov: 50 }} gl={{ alpha: true }} style={{ background: "transparent" }}>
         <ambientLight intensity={1.0} />
-        <pointLight position={[5, 5, 5]} intensity={2} color="#9DB2BF" />
-        <pointLight position={[-5, -5, -5]} intensity={1.5} color="#526D82" />
+        <pointLight position={[5, 5, 5]} intensity={2} color="#E27870" />
+        <pointLight position={[-5, -5, -5]} intensity={1.5} color="#E85A4F" />
         <CenterWireframeEmblem isSearching={isSearching} />
         <OrbitControls enableZoom={false} autoRotate autoRotateSpeed={1.2} />
       </Canvas>
@@ -44,11 +44,11 @@ export default function Agent3DCanvas({ isSearching = false }) {
         <span
           className={`w-2.5 h-2.5 rounded-full ${
             isSearching
-              ? "bg-[#9DB2BF] animate-ping"
-              : "bg-[#526D82] animate-pulse"
+              ? "bg-[#E27870] animate-ping"
+              : "bg-[#E85A4F] animate-pulse"
           }`}
         />
-        <span className="text-[11px] font-bold text-[#526D82] tracking-wider uppercase">
+        <span className="text-[11px] font-bold text-[#726363] tracking-wider uppercase">
           {isSearching
             ? "LangGraph Multi-Agent Engine Active"
             : "Interactive 3D Agent Engine Ready"}

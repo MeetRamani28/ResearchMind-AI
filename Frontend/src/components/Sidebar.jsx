@@ -62,7 +62,7 @@ const Sidebar = ({ onOpenSettings }) => {
     <>
       <button
         onClick={() => setIsMobileOpen(!isMobileOpen)}
-        className="md:hidden fixed top-4 left-4 z-[100] p-2.5 bg-[#27374D] text-[#DDE6ED] border border-[#3E5466] rounded-xl shadow-lg cursor-pointer"
+        className="md:hidden fixed top-4 left-4 z-[100] p-2.5 bg-[#3D3133] text-[#EAE7DC] border border-[#524446] rounded-xl shadow-lg cursor-pointer"
       >
         {isMobileOpen ? <HiX size={22} /> : <HiMenu size={22} />}
       </button>
@@ -70,12 +70,12 @@ const Sidebar = ({ onOpenSettings }) => {
       {isMobileOpen && (
         <div
           onClick={() => setIsMobileOpen(false)}
-          className="md:hidden fixed inset-0 bg-[#27374D]/80 backdrop-blur-sm z-[90]"
+          className="md:hidden fixed inset-0 bg-[#3D3133]/80 backdrop-blur-sm z-[90]"
         />
       )}
 
       <aside
-        className={`fixed md:relative z-[95] w-72 h-screen bg-[#27374D] border-r border-[#3E5466] flex flex-col p-4 transition-transform duration-300 shadow-xl ${
+        className={`fixed md:relative z-[95] w-72 h-screen bg-[#3D3133] border-r border-[#524446] flex flex-col p-4 transition-transform duration-300 shadow-xl ${
           isMobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         }`}
       >
@@ -83,20 +83,20 @@ const Sidebar = ({ onOpenSettings }) => {
         <div className="flex items-center gap-3 px-2 mb-7 mt-10 md:mt-2 shrink-0">
           <ResearchMind3DText />
           <div className="flex flex-col">
-            <h1 className="text-base font-black tracking-tight text-[#DDE6ED] flex items-center gap-1.5">
+            <h1 className="text-base font-black tracking-tight text-[#EAE7DC] flex items-center gap-1.5">
               ResearchMind
             </h1>
-            <span className="text-[10px] font-bold text-[#9DB2BF] tracking-widest uppercase">
+            <span className="text-[10px] font-bold text-[#e27870] tracking-widest uppercase">
               FastAPI • LangGraph
             </span>
           </div>
         </div>
 
-        {/* New Session Action Button (Solid Color - No Gradients) */}
+        {/* New Session Action Button (Solid Terracotta Coral - No Gradients) */}
         <button
           onClick={handleCreateNewChat}
           disabled={isCreating}
-          className="group relative flex items-center justify-center gap-2 w-full bg-[#526D82] hover:bg-[#3E5466] text-[#DDE6ED] py-3 px-4 rounded-xl font-bold text-sm shadow-md transition-all duration-200 shrink-0 mb-6 active:scale-[0.98] disabled:opacity-50 cursor-pointer"
+          className="group relative flex items-center justify-center gap-2 w-full bg-[#E85A4F] hover:bg-[#D1453A] text-white py-3 px-4 rounded-xl font-bold text-sm shadow-md transition-all duration-200 shrink-0 mb-6 active:scale-[0.98] disabled:opacity-50 cursor-pointer"
         >
           <HiPlus size={18} className="group-hover:rotate-90 transition-transform duration-200" />
           <span>{isCreating ? "Creating..." : "New Workspace"}</span>
@@ -105,7 +105,7 @@ const Sidebar = ({ onOpenSettings }) => {
         {/* Session List */}
         <div className="flex-1 overflow-y-auto space-y-1 pr-1 no-scrollbar">
           <div className="px-2 pb-2">
-            <span className="text-[11px] font-bold text-[#9DB2BF]/80 uppercase tracking-wider">
+            <span className="text-[11px] font-bold text-[#e27870]/80 uppercase tracking-wider">
               Recent Workspaces
             </span>
           </div>
@@ -115,7 +115,7 @@ const Sidebar = ({ onOpenSettings }) => {
               className="chat-item-container group relative flex items-center"
             >
               {editingId === chat._id ? (
-                <div className="flex-1 flex items-center bg-[#3E5466] border border-[#9DB2BF]/60 p-2 rounded-xl">
+                <div className="flex-1 flex items-center bg-[#524446] border border-[#e27870]/60 p-2 rounded-xl">
                   <input
                     className="bg-transparent text-sm w-full outline-none text-white truncate font-medium"
                     value={editTitle}
@@ -128,7 +128,7 @@ const Sidebar = ({ onOpenSettings }) => {
                       setEditingId(null);
                     }}
                   >
-                    <HiCheck className="text-[#9DB2BF] ml-2 hover:scale-110 transition-transform cursor-pointer" />
+                    <HiCheck className="text-[#e27870] ml-2 hover:scale-110 transition-transform cursor-pointer" />
                   </button>
                 </div>
               ) : (
@@ -137,8 +137,8 @@ const Sidebar = ({ onOpenSettings }) => {
                   onClick={() => setIsMobileOpen(false)}
                   className={`flex-1 flex items-center justify-between p-2.5 rounded-xl text-sm transition-all min-w-0 cursor-pointer ${
                     location.pathname.includes(chat._id)
-                      ? "bg-[#526D82]/40 text-[#DDE6ED] font-bold border border-[#9DB2BF]/40 shadow-xs"
-                      : "text-[#9DB2BF] hover:text-white hover:bg-[#3E5466]/50 border border-transparent"
+                      ? "bg-[#E85A4F]/30 text-[#EAE7DC] font-bold border border-[#e27870]/40 shadow-xs"
+                      : "text-[#EAE7DC]/90 hover:text-white hover:bg-[#524446]/50 border border-transparent"
                   }`}
                 >
                   <span
@@ -153,14 +153,14 @@ const Sidebar = ({ onOpenSettings }) => {
                       e.stopPropagation();
                       setMenuId(menuId === chat._id ? null : chat._id);
                     }}
-                    className="opacity-0 group-hover:opacity-100 p-1 hover:bg-[#3E5466] text-[#9DB2BF] hover:text-white rounded-lg transition-all shrink-0 cursor-pointer"
+                    className="opacity-0 group-hover:opacity-100 p-1 hover:bg-[#524446] text-[#e27870] hover:text-white rounded-lg transition-all shrink-0 cursor-pointer"
                   >
                     <HiDotsVertical size={15} />
                   </button>
                 </Link>
               )}
               {menuId === chat._id && (
-                <div className="absolute right-2 top-10 w-32 bg-[#27374D] border border-[#3E5466] rounded-xl shadow-2xl p-1 z-[999]">
+                <div className="absolute right-2 top-10 w-32 bg-[#3D3133] border border-[#524446] rounded-xl shadow-2xl p-1 z-[999]">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -168,7 +168,7 @@ const Sidebar = ({ onOpenSettings }) => {
                       setEditTitle(chat.title);
                       setMenuId(null);
                     }}
-                    className="w-full flex items-center gap-2 text-xs p-2 text-[#9DB2BF] hover:text-white hover:bg-[#3E5466] rounded-lg transition-colors cursor-pointer"
+                    className="w-full flex items-center gap-2 text-xs p-2 text-[#EAE7DC] hover:text-white hover:bg-[#524446] rounded-lg transition-colors cursor-pointer"
                   >
                     <HiPencil size={13} /> Rename
                   </button>
@@ -178,7 +178,7 @@ const Sidebar = ({ onOpenSettings }) => {
                       if (window.confirm("Delete session?"))
                         deleteChat.mutate(chat._id);
                     }}
-                    className="w-full flex items-center gap-2 text-xs p-2 text-red-300 hover:bg-red-950/40 rounded-lg transition-colors cursor-pointer"
+                    className="w-full flex items-center gap-2 text-xs p-2 text-rose-300 hover:bg-rose-950/40 rounded-lg transition-colors cursor-pointer"
                   >
                     <HiTrash size={13} /> Delete
                   </button>
@@ -189,7 +189,7 @@ const Sidebar = ({ onOpenSettings }) => {
         </div>
 
         {/* User Profile Footer (Bottom Left Avatar Bar) */}
-        <div className="mt-auto border-t border-[#3E5466] pt-4 shrink-0">
+        <div className="mt-auto border-t border-[#524446] pt-4 shrink-0">
           <div className="flex items-center justify-between px-2">
             <div
               onClick={onOpenSettings}
@@ -198,14 +198,14 @@ const Sidebar = ({ onOpenSettings }) => {
               <img
                 src={user?.avatar || user?.imageUrl || defaultAvatar}
                 alt="User Avatar"
-                className="w-10 h-10 rounded-xl object-cover border-2 border-[#9DB2BF] shadow-sm group-hover:border-white group-hover:scale-105 transition-all"
+                className="w-10 h-10 rounded-xl object-cover border-2 border-[#e27870] shadow-sm group-hover:border-white group-hover:scale-105 transition-all"
               />
               <div className="flex flex-col">
-                <span className="text-sm font-bold text-[#DDE6ED] truncate max-w-[120px] group-hover:text-[#9DB2BF] transition-colors">
+                <span className="text-sm font-bold text-[#EAE7DC] truncate max-w-[120px] group-hover:text-[#e27870] transition-colors">
                   {user?.fullName || "Researcher"}
                 </span>
-                <span className="text-[11px] font-semibold text-[#9DB2BF] flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#526D82] animate-pulse" />
+                <span className="text-[11px] font-semibold text-[#e27870] flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#E85A4F] animate-pulse" />
                   Engine Ready
                 </span>
               </div>
@@ -213,7 +213,7 @@ const Sidebar = ({ onOpenSettings }) => {
             {onOpenSettings && (
               <button
                 onClick={onOpenSettings}
-                className="p-2 text-[#9DB2BF] hover:text-white hover:bg-[#3E5466] rounded-xl transition-all cursor-pointer"
+                className="p-2 text-[#e27870] hover:text-white hover:bg-[#524446] rounded-xl transition-all cursor-pointer"
                 title="User Profile & Settings"
               >
                 <HiCog size={20} />

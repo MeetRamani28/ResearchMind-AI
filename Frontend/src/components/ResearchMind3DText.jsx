@@ -17,8 +17,8 @@ function GlowingEmblemMesh() {
       <mesh ref={meshRef}>
         <octahedronGeometry args={[0.9, 0]} />
         <meshStandardMaterial
-          color="#9DB2BF"
-          emissive="#526D82"
+          color="#E27870"
+          emissive="#E85A4F"
           emissiveIntensity={0.9}
           roughness={0.2}
           metalness={0.9}
@@ -38,7 +38,7 @@ export default function ResearchMind3DText() {
         style={{ background: "transparent" }}
       >
         <ambientLight intensity={0.8} />
-        <pointLight position={[5, 5, 5]} intensity={1.5} color="#9DB2BF" />
+        <pointLight position={[5, 5, 5]} intensity={1.5} color="#E27870" />
         <GlowingEmblemMesh />
       </Canvas>
     </div>

@@ -206,27 +206,27 @@ const Dashboard = () => {
         href={href}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-1 text-[#526D82] hover:text-[#3E5466] underline font-bold transition-colors cursor-pointer"
+        className="inline-flex items-center gap-1 text-[#E85A4F] hover:text-[#D1453A] underline font-bold transition-colors cursor-pointer"
       >
         <span>{children}</span>
         <HiExternalLink className="inline text-xs" />
       </a>
     ),
-    p: ({ children }) => <p className="my-2.5 leading-relaxed text-[#27374D]">{children}</p>,
-    ul: ({ children }) => <ul className="list-disc list-inside space-y-2 my-2.5 text-[#27374D]">{children}</ul>,
-    ol: ({ children }) => <ol className="list-decimal list-inside space-y-2 my-2.5 text-[#27374D]">{children}</ol>,
+    p: ({ children }) => <p className="my-2.5 leading-relaxed text-[#3D3133]">{children}</p>,
+    ul: ({ children }) => <ul className="list-disc list-inside space-y-2 my-2.5 text-[#3D3133]">{children}</ul>,
+    ol: ({ children }) => <ol className="list-decimal list-inside space-y-2 my-2.5 text-[#3D3133]">{children}</ol>,
     li: ({ children }) => <li className="ml-2 font-medium">{children}</li>,
-    strong: ({ children }) => <strong className="font-extrabold text-[#27374D]">{children}</strong>,
+    strong: ({ children }) => <strong className="font-extrabold text-[#2E2527]">{children}</strong>,
     table: ({ children }) => (
-      <div className="overflow-x-auto my-3 rounded-xl border border-[#9DB2BF] bg-white">
-        <table className="w-full border-collapse text-xs text-[#27374D]">{children}</table>
+      <div className="overflow-x-auto my-3 rounded-xl border border-[#D8C3A5] bg-white">
+        <table className="w-full border-collapse text-xs text-[#3D3133]">{children}</table>
       </div>
     ),
-    thead: ({ children }) => <thead className="bg-[#DDE6ED] border-b border-[#9DB2BF] text-[#27374D] font-bold">{children}</thead>,
-    th: ({ children }) => <th className="p-2.5 text-left border-r border-[#9DB2BF] last:border-0">{children}</th>,
-    td: ({ children }) => <td className="p-2.5 border-t border-r border-[#9DB2BF] last:border-0 hover:bg-[#DDE6ED]/60">{children}</td>,
+    thead: ({ children }) => <thead className="bg-[#EAE7DC] border-b border-[#D8C3A5] text-[#E85A4F] font-bold">{children}</thead>,
+    th: ({ children }) => <th className="p-2.5 text-left border-r border-[#D8C3A5] last:border-0">{children}</th>,
+    td: ({ children }) => <td className="p-2.5 border-t border-r border-[#D8C3A5] last:border-0 hover:bg-[#EAE7DC]/60">{children}</td>,
     code: ({ children }) => (
-      <code className="bg-[#DDE6ED] px-2 py-0.5 rounded text-[#27374D] font-mono text-xs border border-[#9DB2BF] font-semibold">
+      <code className="bg-[#EAE7DC] px-2 py-0.5 rounded text-[#E85A4F] font-mono text-xs border border-[#D8C3A5] font-semibold">
         {children}
       </code>
     ),
@@ -237,11 +237,11 @@ const Dashboard = () => {
       const parsed = typeof content === "string" ? JSON.parse(content) : content;
       if (parsed.is_direct_chat) {
         return (
-          <div className="group relative bg-white border border-[#9DB2BF]/60 p-5 md:p-6 rounded-2xl text-[#27374D] text-sm leading-relaxed shadow-sm my-4">
-            <div className="flex items-center justify-between pb-3 mb-3 border-b border-[#9DB2BF]/40">
+          <div className="group relative bg-white border border-[#D8C3A5] p-5 md:p-6 rounded-2xl text-[#3D3133] text-sm leading-relaxed shadow-sm my-4">
+            <div className="flex items-center justify-between pb-3 mb-3 border-b border-[#D8C3A5]/50">
               <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-[#526D82]" />
-                <span className="text-xs font-bold text-[#526D82] uppercase tracking-wider">
+                <span className="w-2 h-2 rounded-full bg-[#E85A4F]" />
+                <span className="text-xs font-bold text-[#E85A4F] uppercase tracking-wider">
                   ResearchMind AI Response
                 </span>
               </div>
@@ -256,7 +256,7 @@ const Dashboard = () => {
       return <ReportPanel report={parsed} />;
     } catch (e) {
       return (
-        <div className="group relative bg-white border border-[#9DB2BF]/60 p-5 md:p-6 rounded-2xl text-[#27374D] text-sm leading-relaxed shadow-sm my-4">
+        <div className="group relative bg-white border border-[#D8C3A5] p-5 md:p-6 rounded-2xl text-[#3D3133] text-sm leading-relaxed shadow-sm my-4">
           <div className="flex justify-end pb-2">
             <CopyButton text={content} />
           </div>
@@ -269,19 +269,19 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="flex h-screen w-full bg-[#DDE6ED] text-[#27374D] transition-colors duration-300 overflow-hidden">
+    <div className="flex h-screen w-full bg-[#EAE7DC] text-[#3D3133] transition-colors duration-300 overflow-hidden">
       <div className="flex-1 flex flex-col w-full h-full overflow-hidden">
         {/* Top Header */}
-        <div className="w-full p-4 px-6 flex justify-between items-center bg-white border-b border-[#9DB2BF]/60 shadow-xs shrink-0">
+        <div className="w-full p-4 px-6 flex justify-between items-center bg-white border-b border-[#D8C3A5] shadow-xs shrink-0">
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#526D82] animate-pulse" />
-            <span className="text-xs font-bold text-[#526D82] tracking-wide">
-              FastAPI Engine Connected
+            <span className="w-2.5 h-2.5 rounded-full bg-[#E85A4F] animate-pulse" />
+            <span className="text-xs font-bold text-[#E85A4F] tracking-wide">
+              FastAPI Engine Connected ({import.meta.env.VITE_ENV_MODE || "Production"})
             </span>
           </div>
           <button
             onClick={() => logout(navigate)}
-            className="flex items-center gap-2 px-3.5 py-1.5 text-xs font-bold text-[#526D82] hover:text-red-600 hover:bg-red-50 rounded-xl transition-all cursor-pointer"
+            className="flex items-center gap-2 px-3.5 py-1.5 text-xs font-bold text-[#726363] hover:text-red-600 hover:bg-red-50 rounded-xl transition-all cursor-pointer"
           >
             <HiLogout size={16} /> Logout
           </button>
@@ -297,10 +297,10 @@ const Dashboard = () => {
                   <Agent3DCanvas isSearching={isSearching} />
                 </div>
                 <div className="space-y-2 max-w-md">
-                  <h2 className="text-3xl font-black text-[#27374D] tracking-tight">
+                  <h2 className="text-3xl font-black text-[#2E2527] tracking-tight">
                     Welcome, {user?.fullName || "Researcher"}!
                   </h2>
-                  <p className="text-[#526D82] text-sm leading-relaxed font-medium">
+                  <p className="text-[#726363] text-sm leading-relaxed font-medium">
                     Ask any question directly in English, Hindi, or Gujarati, or type a complex topic to trigger 
                     your multi-agent research engine.
                   </p>
@@ -312,8 +312,8 @@ const Dashboard = () => {
                   <div key={i} className="mb-6">
                     {m.role === "user" ? (
                       <div className="flex justify-end">
-                        {/* Solid color button/bubble - No Gradients */}
-                        <div className="bg-[#526D82] text-[#DDE6ED] p-3.5 px-5 rounded-2xl text-sm font-semibold shadow-md max-w-xl">
+                        {/* Solid Coral Red User Bubble - No Gradients */}
+                        <div className="bg-[#E85A4F] text-white p-3.5 px-5 rounded-2xl text-sm font-semibold shadow-md max-w-xl">
                           {m.content}
                         </div>
                       </div>
@@ -353,20 +353,20 @@ const Dashboard = () => {
         </div>
 
         {/* Input Container */}
-        <div className="w-full p-4 md:p-6 bg-white/90 border-t border-[#9DB2BF]/60 shrink-0 backdrop-blur-md">
+        <div className="w-full p-4 md:p-6 bg-white/90 border-t border-[#D8C3A5] shrink-0 backdrop-blur-md">
           <div className="max-w-3xl mx-auto flex gap-2.5 items-center">
             <input
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
               onKeyDown={handleKeyDown}
-              className="flex-1 p-3.5 md:p-4 bg-[#F4F7F9] rounded-2xl outline-none border border-[#9DB2BF] focus:border-[#526D82] text-[#27374D] placeholder-[#526D82]/70 transition-all text-sm md:text-base font-medium shadow-inner"
+              className="flex-1 p-3.5 md:p-4 bg-[#EAE7DC] rounded-2xl outline-none border border-[#D8C3A5] focus:border-[#E85A4F] text-[#2E2527] placeholder-[#726363]/70 transition-all text-sm md:text-base font-medium shadow-inner"
               placeholder="Ask anything (e.g. hello kem cho, or Quantum Computing advances in 2026)..."
             />
-            {/* Solid color Send Button - No Gradients */}
+            {/* Solid Terracotta Coral Send Button - No Gradients */}
             <button
               onClick={handleRun}
               disabled={isSearching}
-              className="bg-[#526D82] hover:bg-[#3E5466] disabled:opacity-50 px-6 py-3.5 md:py-4 rounded-2xl font-bold text-white transition-all shadow-md flex items-center gap-2 active:scale-95 cursor-pointer shrink-0"
+              className="bg-[#E85A4F] hover:bg-[#D1453A] disabled:opacity-50 px-6 py-3.5 md:py-4 rounded-2xl font-bold text-white transition-all shadow-md flex items-center gap-2 active:scale-95 cursor-pointer shrink-0"
             >
               <IoRocketSharp size={18} /> Send
             </button>
