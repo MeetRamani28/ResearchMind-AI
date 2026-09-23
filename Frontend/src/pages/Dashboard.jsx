@@ -158,7 +158,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isSearching]);
+  }, [messages, isSearching, agentSteps]);
 
   const handleRun = async () => {
     if (!topic.trim() || isSearching) return;
@@ -287,8 +287,8 @@ const Dashboard = () => {
           </button>
         </div>
 
-        {/* Workspace Scroll Area */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-6 pb-48 w-full no-scrollbar">
+        {/* Workspace Scroll Area with Enhanced Bottom Padding */}
+        <div className="flex-1 overflow-y-auto p-4 md:p-6 pb-72 w-full no-scrollbar">
           <div className="max-w-4xl mx-auto w-full h-full flex flex-col">
             {messages.length === 0 && !isSearching ? (
               <div className="flex-1 flex flex-col items-center justify-center text-center space-y-4 my-auto">
@@ -323,7 +323,7 @@ const Dashboard = () => {
                   </div>
                 ))}
                 {isSearching && (
-                  <div className="space-y-2.5 mb-6">
+                  <div className="space-y-3 mb-16">
                     <StepCard
                       num="01"
                       title="Search Agent (Tavily)"
@@ -346,13 +346,13 @@ const Dashboard = () => {
                     />
                   </div>
                 )}
-                <div ref={scrollRef} className="h-10" />
+                <div ref={scrollRef} className="h-16" />
               </>
             )}
           </div>
         </div>
 
-        {/* Input Container */}
+        {/* Floating Input Container */}
         <div className="w-full p-4 md:p-6 bg-white/90 border-t border-[#D8C3A5] shrink-0 backdrop-blur-md">
           <div className="max-w-3xl mx-auto flex gap-2.5 items-center">
             <input

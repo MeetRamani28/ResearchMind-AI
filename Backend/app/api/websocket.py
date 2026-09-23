@@ -88,10 +88,7 @@ async def websocket_research_endpoint(
                             await manager.broadcast(chat_id, "research-complete", {"data": result_payload})
 
                         else:
-                            # Run full 4-agent LangGraph pipeline
-                            await manager.broadcast(chat_id, "research-status", {"message": "[STATUS] [STEP-1] Search Agent is working..."})
-                            await asyncio.sleep(0.3)
-
+                            # Run full 4-agent LangGraph pipeline with real-time streaming updates
                             initial_state = {
                                 "topic": topic,
                                 "session_id": chat_id,
@@ -106,14 +103,12 @@ async def websocket_research_endpoint(
                                 "step_messages": []
                             }
 
-                            await manager.broadcast(chat_id, "research-status", {"message": "[STATUS] [STEP-2] Reader Agent is scraping top resources..."})
-                            
-                            final_state = await asyncio.to_thread(research_graph.invoke, initial_state)
-                            
-                            await manager.broadcast(chat_id, "research-status", {"message": "[STATUS] [STEP-3] Writer Chain is drafting the report..."})
-                            await asyncio.sleep(0.2)
-                            await manager.broadcast(chat_id, "research-status", {"message": "[STATUS] [STEP-4] Critic Chain is reviewing the report..."})
-                            await asyncio.sleep(0.2)
+                            final_state = dict(initial_state)
+                            async for event in research_graph.astream(initial_state):
+                                for node_name, node_output in event.items():
+                                    final_state.update(node_output)
+                                    step_msg = node_output.get("current_step", f"Completed {node_name}")
+                                    await manager.broadcast(chat_id, "research-status", {"message": f"[STATUS] {step_msg}"})
 
                             result_payload = {
                                 "is_direct_chat": False,

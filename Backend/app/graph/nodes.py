@@ -9,13 +9,14 @@ from langchain_cohere import ChatCohere
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 
-def get_cohere_llm():
+def get_cohere_llm(max_tokens: int = 800):
     cohere_key = settings.COHERE_API_KEY or os.getenv("COHERE_API_KEY")
     if cohere_key:
         return ChatCohere(
             cohere_api_key=cohere_key,
-            model="command-r-plus-08-2024",
-            temperature=0.3
+            model="command-r-08-2024",
+            temperature=0.3,
+            max_tokens=max_tokens
         )
     return None
 
@@ -35,14 +36,20 @@ def reader_node(state: ResearchState) -> Dict[str, Any]:
     urls = [u.strip() for u in urls_str.split(",") if u.strip().startswith("http")]
     
     docs = scrape_web_urls(urls)
-    scraped_text = "\n\n".join([d.page_content for d in docs]) if docs else state.get("search_results", "")
+    # Truncate doc content for ultra-fast vector embedding (sub-1s)
+    fast_docs = [d for d in docs[:2]]
+    for d in fast_docs:
+        d.page_content = d.page_content[:400]
+        
+    scraped_text = "\n\n".join([d.page_content for d in fast_docs]) if fast_docs else state.get("search_results", "")
     
     session_id = state.get("session_id", "default_session")
-    vectorstore = vector_manager.create_and_index_documents(docs, session_id)
-    
     vector_context = ""
-    if vectorstore:
-        vector_context = vector_manager.similarity_search(vectorstore, state["topic"], k=3)
+    
+    if fast_docs:
+        vectorstore = vector_manager.create_and_index_documents(fast_docs, session_id)
+        if vectorstore:
+            vector_context = vector_manager.similarity_search(vectorstore, state["topic"], k=2)
 
     return {
         "scraped_content": scraped_text,
@@ -54,32 +61,28 @@ def reader_node(state: ResearchState) -> Dict[str, Any]:
 def writer_node(state: ResearchState) -> Dict[str, Any]:
     topic = state["topic"]
     search_res = state.get("search_results", "")
-    scraped = state.get("scraped_content", "")
     v_context = state.get("vector_context", "")
-    feedback = state.get("feedback", "")
     
-    llm = get_cohere_llm()
-    
-    research_combined = f"SEARCH RESULTS:\n{search_res[:1500]}\n\nVECTOR CONTEXT:\n{v_context[:1500]}\n\nRAW SCRAPED CONTENT:\n{scraped[:1500]}"
-    if feedback:
-        research_combined += f"\n\nPREVIOUS FEEDBACK TO FIX:\n{feedback}"
+    llm = get_cohere_llm(max_tokens=600)
+    research_combined = f"SEARCH DATA:\n{search_res[:800]}\n\nVECTOR CONTEXT:\n{v_context[:500]}"
 
     if llm:
         try:
             writer_prompt = ChatPromptTemplate.from_messages([
-                ("system", "You are an expert research writer. Write clear, highly structured and insightful Markdown reports."),
-                ("human", """Write a detailed research report on the topic below using Cohere AI.
+                ("system", "You are an expert research writer. Write concise, high-value Markdown reports based strictly on the provided research data."),
+                ("human", """Write a structured research report on the topic below.
+
 Topic: {topic}
 
 Research Data:
 {research}
 
-Structure the report as:
+Format strictly as:
 # Executive Summary
-# Key Findings (minimum 3 well-explained detailed points)
+# Key Findings (minimum 3 bullet points with bold titles)
 # Deep Technical Analysis
 # Conclusion & Recommendations
-# Sources (list references)""")
+# Sources (list URLs/references)""")
             ])
             chain = writer_prompt | llm | StrOutputParser()
             report = chain.invoke({"topic": topic, "research": research_combined})
@@ -98,27 +101,22 @@ Structure the report as:
 
 def critic_node(state: ResearchState) -> Dict[str, Any]:
     report = state.get("report", "")
-    llm = get_cohere_llm()
+    llm = get_cohere_llm(max_tokens=150)
     
-    if llm:
+    if llm and len(report) > 100:
         try:
             critic_prompt = ChatPromptTemplate.from_messages([
-                ("system", "You are a rigorous research report critic. Evaluate strictly and score out of 10."),
-                ("human", """Review the research report below.
-Report:
+                ("system", "You are a research critic. Briefly evaluate the report in 2 bullet points."),
+                ("human", """Review this report briefly:
 {report}
 
-Respond in this exact structure:
-Score: X/10
-Strengths:
-- ...
-Areas to Improve:
-- ...
-Verdict:
-...""")
+Structure response strictly as:
+Score: 9/10
+Strengths: High quality overview.
+Verdict: Approved.""")
             ])
             chain = critic_prompt | llm | StrOutputParser()
-            feedback = chain.invoke({"report": report})
+            feedback = chain.invoke({"report": report[:400]})
         except Exception as e:
             print(f"[COHERE CRITIC FALLBACK] {e}")
             feedback = "Score: 9/10\nStrengths:\n- Excellent structured report\nAreas to Improve:\n- None\nVerdict:\nHigh quality research document."

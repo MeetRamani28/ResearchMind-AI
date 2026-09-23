@@ -15,47 +15,46 @@ class VectorStoreManager:
             )
         else:
             self.embeddings = None
+        self._index_verified = False
 
     def create_and_index_documents(self, documents: List[Document], session_id: str):
-        """Indexes scraped document snippets into Vector DB (FAISS for Dev, Pinecone for Prod)."""
-        if not documents:
-            return None
-
-        if not self.embeddings:
-            print("[VECTOR STORE] Cohere API Key missing, skipping embedding indexing.")
+        """Indexes scraped document snippets into Vector DB (Fast FAISS/Pinecone without repeated index creation delays)."""
+        if not documents or not self.embeddings:
             return None
 
         if settings.ENV_MODE == "production" and settings.PINECONE_API_KEY:
             try:
+                os.environ["PINECONE_API_KEY"] = settings.PINECONE_API_KEY
                 from pinecone import Pinecone, ServerlessSpec
                 pc = Pinecone(api_key=settings.PINECONE_API_KEY)
-                
                 index_name = settings.PINECONE_INDEX_NAME
-                existing_indexes = [i.name for i in pc.list_indexes()]
-                if index_name not in existing_indexes:
-                    pc.create_index(
-                        name=index_name,
-                        dimension=1024, # Cohere embed-english-v3.0 dimension
-                        metric="cosine",
-                        spec=ServerlessSpec(cloud="aws", region="us-east-1")
-                    )
+
+                if not self._index_verified:
+                    existing = [i.name for i in pc.list_indexes()]
+                    if index_name not in existing:
+                        pc.create_index(
+                            name=index_name,
+                            dimension=1024,
+                            metric="cosine",
+                            spec=ServerlessSpec(cloud="aws", region="us-east-1")
+                        )
+                    self._index_verified = True
                 
                 from langchain_pinecone import PineconeVectorStore
                 vectorstore = PineconeVectorStore.from_documents(
                     documents=documents,
                     embedding=self.embeddings,
                     index_name=index_name,
-                    namespace=session_id
+                    namespace=session_id,
+                    pinecone_api_key=settings.PINECONE_API_KEY
                 )
-                print(f"[VECTOR STORE PROD] Successfully indexed documents to Pinecone (index: {index_name}, namespace: {session_id})")
                 return vectorstore
             except Exception as e:
-                print(f"[VECTOR STORE PROD WARNING] Pinecone indexing failed: {e}. Falling back to FAISS.")
+                print(f"[VECTOR STORE PROD WARNING] Pinecone fast indexing fallback: {e}")
 
-        # Default Development / Fallback Mode using FAISS
+        # Development or Fast Fallback Mode using In-Memory FAISS
         try:
             vectorstore = FAISS.from_documents(documents=documents, embedding=self.embeddings)
-            print("[VECTOR STORE DEV] Successfully indexed documents to FAISS local vector DB.")
             return vectorstore
         except Exception as e:
             print(f"[VECTOR STORE FAISS ERROR] {e}")

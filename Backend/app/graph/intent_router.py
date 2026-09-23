@@ -17,26 +17,32 @@ def get_router_cohere_llm():
     return None
 
 def classify_prompt_intent(prompt: str) -> str:
-    """Classifies user prompt as 'GREETING' or 'RESEARCH'."""
+    """Classifies user prompt as 'GREETING' or 'RESEARCH' using fast regex matching first for instant response."""
     prompt_clean = prompt.strip().lower()
     
+    # Fast regex match for instant <1ms routing
     greeting_patterns = [
         r"^(hi|hello|hey|greetings|good morning|good evening|good afternoon|namaste|kem cho|kese ho|kaise ho|how are you|su khabar)\b",
-        r"^(who are you|what can you do|aapkeseho|kemcho)\b"
+        r"^(who are you|what can you do|tell me about yourself|introduce yourself|aapkeseho|kemcho)\b",
+        r"^(give me a current demands|what is|tell me|explain)\b"
     ]
     
     for pattern in greeting_patterns:
         if re.search(pattern, prompt_clean):
-            if len(prompt_clean.split()) <= 7:
+            if len(prompt_clean.split()) <= 10:
                 return "GREETING"
+
+    # If long query or complex research query
+    if len(prompt_clean.split()) <= 4:
+        return "GREETING"
 
     llm = get_router_cohere_llm()
     if not llm:
-        return "GREETING" if len(prompt_clean.split()) <= 4 else "RESEARCH"
+        return "GREETING" if len(prompt_clean.split()) <= 6 else "RESEARCH"
 
     try:
         router_prompt = ChatPromptTemplate.from_messages([
-            ("system", "You are an intent classifier. Categorize user prompts as either GREETING (for greetings, general chit-chat, simple conversational questions in English/Hindi/Gujarati) or RESEARCH (for technical inquiries requiring web search or structured multi-page report generation). Respond ONLY with the single word GREETING or RESEARCH."),
+            ("system", "You are an intent classifier. Categorize user prompts as either GREETING (for greetings, general chit-chat, direct questions, or simple conversational questions in English/Hindi/Gujarati) or RESEARCH (for heavy technical inquiries requiring multi-page report generation). Respond ONLY with the single word GREETING or RESEARCH."),
             ("human", "{prompt}")
         ])
         chain = router_prompt | llm | StrOutputParser()
@@ -44,7 +50,7 @@ def classify_prompt_intent(prompt: str) -> str:
         return "GREETING" if "GREETING" in intent else "RESEARCH"
     except Exception as e:
         print(f"[INTENT ROUTER FALLBACK] {e}")
-        return "GREETING" if len(prompt_clean.split()) <= 5 else "RESEARCH"
+        return "GREETING" if len(prompt_clean.split()) <= 6 else "RESEARCH"
 
 def generate_direct_conversational_response(prompt: str) -> str:
     """Generates a direct, polite answer using clean Markdown formatting matching the user's language."""
@@ -58,7 +64,7 @@ def generate_direct_conversational_response(prompt: str) -> str:
 Answer the user directly, politely, and cleanly.
 
 CRITICAL FORMATTING INSTRUCTIONS:
-- Use clean Markdown.
+- Use clean Markdown formatting.
 - If listing capabilities or items, put EVERY item on a NEW LINE with proper bullet format (`- **Item**: Description`).
 - Use Markdown tables (`| Header | Header |`) if presenting structured capabilities or comparisons.
 - Do NOT smash multiple bullet points into one single line.
